@@ -1,11 +1,13 @@
 package financial
 
-type FinancialService interface {
-	GetAllPayments() ([]*Payment, error)
+type Service struct {
+	repository *Repository
 }
 
-func (s *FinancialService) GetAllPayments() ([]*Payment, error) {
+func NewService(repository *Repository) *Service {
+	return &Service{repository: repository}
+}
 
-	var array = []*Payment{{"12/12/24", 1, 1, 1, 1, 1, 1}}
-	return array, nil
+func (service *Service) GetAllPayments() ([]Payment, error) {
+	return service.repository.GetAllPayments()
 }

@@ -6,15 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type FinancialHandler struct {
-	FinancialService *FinancialService
+type Handler struct {
+	service *Service
 }
 
-func NewFinancialHandler() *FinancialHandler {
-	return &FinancialHandler{}
+func NewHandler(financialService *Service) *Handler {
+	return &Handler{service: financialService}
 }
 
-func (financialHandler *FinancialHandler) GetAllPayments(context *gin.Context) {
-	payments, err := financialHandler.FinancialService.GetAllPayments()
-	context.JSON(http.StatusOK, gin.H{"version": "v1", "payments": []string{payments}})
+func (financialHandler *Handler) GetAllPayments(context *gin.Context) {
+	payments, err := financialHandler.service.GetAllPayments()
+	if err != nil {
+		context.AbortWithError(http.StatusInternalServerError, err)
+	}
+	context.JSON(http.StatusOK, gin.H{"version": "v1", "payments": payments})
 }
