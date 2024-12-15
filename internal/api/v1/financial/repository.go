@@ -2,6 +2,7 @@ package financial
 
 import (
 	"database/sql"
+	"kawori/api/pkg/database/queries"
 )
 
 type Repository struct {
@@ -12,10 +13,18 @@ func NewRepository(database *sql.DB) *Repository {
 	return &Repository{database}
 }
 
-func (repository *Repository) GetAllPayments() ([]Payment, error) {
-	data, err := repository.dbContext.Query("select * from financial_paymentsummary")
+func (repository *Repository) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
+	data, err := repository.dbContext.Query(
+		queries.GetPaymentSummary,
+		filters.DataInicial,
+		filters.DataFinal,
+		filters.UserId,
+		pagination.Page,
+		pagination.PageSize,
+	)
+
 	if err != nil {
-		return nil, err
+		return GetPaymentSummaryReturn{}, err
 	}
 	var paymentsArray []Payment
 	for data.Next() {
@@ -30,14 +39,17 @@ func (repository *Repository) GetAllPayments() ([]Payment, error) {
 			&payment.Dif,
 			&payment.Accumulated,
 		); errPayment != nil {
-			return nil, errPayment
+			return GetPaymentSummaryReturn{}, errPayment
 
 		}
 		paymentsArray = append(paymentsArray, payment)
 	}
 	if errorSql := data.Err(); errorSql != nil {
-		return nil, errorSql
+		return GetPaymentSummaryReturn{}, errorSql
 	}
 
-	return paymentsArray, nil
+	return GetPaymentSummaryReturn{
+		data:     paymentsArray,
+		pageInfo: pagination,
+	}, nil
 }

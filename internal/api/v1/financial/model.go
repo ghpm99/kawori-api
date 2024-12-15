@@ -1,7 +1,7 @@
 package financial
 
 type Payment struct {
-	PaymentsDate string
+	PaymentsDate string  `json:"payments_date"`
 	UserId       int     `json:"user_id"`
 	Total        int     `json:"total"`
 	Debit        float64 `json:"debit"`
