@@ -1,11 +1,17 @@
 SELECT
-    fp.debit
+    fp.payments_date,
+    fp.user_id,
+    fp.total,
+    fp.debit,
+    fp.credit,
+    fp.dif,
+    fp.accumulated
 FROM
     financial_paymentsummary fp
 WHERE
     1 = 1
-    AND fp.payments_date BETWEEN ?
-    AND ?
-    AND fp.user_id = ?
+    AND fp.user_id = $1
+    AND fp.payments_date BETWEEN $2
+    AND $3
 LIMIT
-    ? OFFSET ?
+    $4 OFFSET $5;

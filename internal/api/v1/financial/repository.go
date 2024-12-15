@@ -14,21 +14,22 @@ func NewRepository(database *sql.DB) *Repository {
 }
 
 func (repository *Repository) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
+
 	data, err := repository.dbContext.Query(
 		queries.GetPaymentSummary,
-		filters.DataInicial,
-		filters.DataFinal,
 		filters.UserId,
-		pagination.Page,
+		filters.StartDate,
+		filters.EndDate,
 		pagination.PageSize,
+		pagination.Page,
 	)
 
 	if err != nil {
 		return GetPaymentSummaryReturn{}, err
 	}
-	var paymentsArray []Payment
+	var paymentsArray []PaymentSummary
 	for data.Next() {
-		var payment Payment
+		var payment PaymentSummary
 
 		if errPayment := data.Scan(
 			&payment.PaymentsDate,

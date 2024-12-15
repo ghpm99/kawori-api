@@ -1,9 +1,9 @@
 package financial
 
 import (
+	"kawori/api/pkg/utils"
+	"log"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,41 +18,28 @@ func NewHandler(financialService *Service) *Handler {
 
 func (handler *Handler) GetPaymentSummary(context *gin.Context) {
 
-	pageQuery := context.DefaultQuery("page", "1")
-	page, err := strconv.Atoi(pageQuery)
-	if err != nil {
-		context.AbortWithError(http.StatusBadRequest, err)
-	}
+	page := utils.ParseInt(context.DefaultQuery("page", "1"), context)
+	pageSize := utils.ParseInt(context.DefaultQuery("page_size", "15"), context)
 
-	pageSizeQuery := context.DefaultQuery("page_size", "15")
-	pageSize, err := strconv.Atoi(pageSizeQuery)
-	if err != nil {
-		context.AbortWithError(http.StatusBadRequest, err)
-	}
+	startDate := utils.ParseDate(context.Query("start_date"), context)
+	endDate := utils.ParseDate(context.Query("end_date"), context)
 
-	dataInicialQuery := context.Query("data_inicial")
-	dataInicial, err := time.Parse("2006-01-02", dataInicialQuery)
+	payments, err := handler.service.GetPaymentSummary(
+		Pagination{
+			Page:     page,
+			PageSize: pageSize,
+		}, PaymentSummaryFilter{
+			UserId:    1,
+			StartDate: startDate,
+			EndDate:   endDate,
+		},
+	)
 	if err != nil {
-		context.AbortWithError(http.StatusBadRequest, err)
-	}
-
-	dataFinalQuery := context.Query("data_final")
-
-	dataFinal, err := time.Parse("2006-01-02", dataFinalQuery)
-	if err != nil {
-		context.AbortWithError(http.StatusBadRequest, err)
-	}
-
-	payments, err := handler.service.GetPaymentSummary(Pagination{
-		Page:     page,
-		PageSize: pageSize,
-	}, PaymentSummaryFilter{
-		UserId:      1,
-		DataInicial: dataInicial,
-		DataFinal:   dataFinal,
-	})
-	if err != nil {
+		log.Println(err)
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
-	context.JSON(http.StatusOK, gin.H{"version": "v1", "payments": payments})
+	context.JSON(http.StatusOK, gin.H{
+		"payments":  payments.data,
+		"page_info": payments.pageInfo,
+	})
 }
