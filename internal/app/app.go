@@ -32,6 +32,8 @@ func InitializeApp() (*Application, error) {
 
 	router := gin.Default()
 
+	router.Use(authMiddleware())
+
 	RegisterRoutes(router, database)
 
 	return &Application{Router: router}, nil

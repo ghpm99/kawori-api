@@ -17,6 +17,15 @@ func NewHandler(financialService *Service) *Handler {
 }
 
 func (handler *Handler) GetPaymentSummary(context *gin.Context) {
+	userContext, exist := context.Get("user")
+
+	if !exist {
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Este usuário não possui permissão para acessar este módulo.",
+		})
+	}
+
+	userData := userContext.(utils.User)
 
 	page := utils.ParseInt(context.DefaultQuery("page", "1"), context)
 	pageSize := utils.ParseInt(context.DefaultQuery("page_size", "15"), context)
@@ -29,7 +38,7 @@ func (handler *Handler) GetPaymentSummary(context *gin.Context) {
 			Page:     page,
 			PageSize: pageSize,
 		}, PaymentSummaryFilter{
-			UserId:    1,
+			UserId:    userData.Id,
 			StartDate: startDate,
 			EndDate:   endDate,
 		},
@@ -38,6 +47,7 @@ func (handler *Handler) GetPaymentSummary(context *gin.Context) {
 		log.Println(err)
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
+
 	context.JSON(http.StatusOK, gin.H{
 		"payments":  payments.data,
 		"page_info": payments.pageInfo,

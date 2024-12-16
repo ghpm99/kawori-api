@@ -49,6 +49,14 @@ func (repository *Repository) GetPaymentSummary(pagination Pagination, filters P
 		return GetPaymentSummaryReturn{}, errorSql
 	}
 
+	if pagination.Page > 1 {
+		pagination.HasPrev = true
+	}
+
+	if paymentsArray == nil {
+		paymentsArray = []PaymentSummary{}
+	}
+
 	return GetPaymentSummaryReturn{
 		data:     paymentsArray,
 		pageInfo: pagination,
