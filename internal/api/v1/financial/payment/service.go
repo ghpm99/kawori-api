@@ -1,4 +1,4 @@
-package financial
+package payment
 
 type Service struct {
 	repository *Repository

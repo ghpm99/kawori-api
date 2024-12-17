@@ -1,4 +1,4 @@
-package financial
+package contract
 
 import "time"
 
