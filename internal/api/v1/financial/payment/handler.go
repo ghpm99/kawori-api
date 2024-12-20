@@ -16,7 +16,7 @@ func NewHandler(financialService *Service) *Handler {
 	return &Handler{service: financialService}
 }
 
-func (handler *Handler) GetPaymentSummary(context *gin.Context) {
+func (handler *Handler) GetPaymentSummaryHandler(context *gin.Context) {
 	userContext, exist := context.Get("user")
 
 	if !exist {
@@ -52,4 +52,16 @@ func (handler *Handler) GetPaymentSummary(context *gin.Context) {
 		"payments":  payments.data,
 		"page_info": payments.pageInfo,
 	})
+}
+
+func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
+	userContext, exist := context.Get("user")
+
+	if !exist {
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Este usuário não possui permissão para acessar este módulo.",
+		})
+	}
+
+	userData := userContext.(utils.User)
 }

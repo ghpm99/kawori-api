@@ -14,5 +14,5 @@ func RegisterPaymentRoutes(router *gin.RouterGroup, database *sql.DB) {
 
 	financial := router.Group("/payment")
 
-	financial.GET("/summary", handler.GetPaymentSummary)
+	financial.GET("/summary", handler.GetPaymentSummaryHandler)
 }
