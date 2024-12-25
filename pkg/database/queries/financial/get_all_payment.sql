@@ -1,17 +1,28 @@
-select
-    *
-from
+SELECT
+    fp.id,
+    fp.status,
+    fp."type",
+    fp."name",
+    fp."date",
+    fp.installments,
+    fp.payment_date,
+    fp.fixed,
+    fp.value,
+    fp.invoice_id
+FROM
     financial_payment fp
-where
+WHERE
     1 = 1
-    and fp.status = 1
-    and fp.type = 1
-    and fp.name like '%%'
-    and fp."date" between ''
-    and ''
-    and fp.installments = 1
-    and fp.payment_date between ''
-    and ''
-    and fp.fixed = false
-    and fp.active = true
-    and fp.user_id = 1;
+    AND fp.status = $1
+    AND fp.type = $2
+    AND fp.name LIKE $3
+    AND fp."date" BETWEEN $4
+    AND $5
+    AND fp.installments = $6
+    AND fp.payment_date BETWEEN $7
+    AND $8
+    AND fp.fixed = $9
+    AND fp.active = $10
+    AND fp.user_id = $11
+LIMIT
+    $12 OFFSET $13;

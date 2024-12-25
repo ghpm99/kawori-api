@@ -64,4 +64,7 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 	}
 
 	userData := userContext.(utils.User)
+
+	page := utils.ParseInt(context.DefaultQuery("page", "1"), context)
+	pageSize := utils.ParseInt(context.DefaultQuery("page_size", "15"), context)
 }

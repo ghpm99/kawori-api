@@ -8,6 +8,20 @@ type PaymentSummaryFilter struct {
 	EndDate   time.Time
 }
 
+type PaymentFilter struct {
+	UserId           int
+	Status           int
+	Type             int
+	Name             string
+	StartDate        time.Time
+	EndDate          time.Time
+	installments     int
+	StartPaymentDate time.Time
+	EndPaymentDate   time.Time
+	Fixed            bool
+	Active           bool
+}
+
 type Pagination struct {
 	Page     int  `json:"page"`
 	PageSize int  `json:"page_size"`
@@ -17,5 +31,10 @@ type Pagination struct {
 
 type GetPaymentSummaryReturn struct {
 	data     []PaymentSummary
+	pageInfo Pagination
+}
+
+type GetPaymentReturn struct {
+	data     []Payment
 	pageInfo Pagination
 }
