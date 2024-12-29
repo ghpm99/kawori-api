@@ -15,7 +15,7 @@ type PaymentFilter struct {
 	Name             string
 	StartDate        time.Time
 	EndDate          time.Time
-	installments     int
+	installment      int
 	StartPaymentDate time.Time
 	EndPaymentDate   time.Time
 	Fixed            bool

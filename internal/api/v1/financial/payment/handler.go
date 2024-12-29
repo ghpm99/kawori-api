@@ -67,4 +67,46 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 
 	page := utils.ParseInt(context.DefaultQuery("page", "1"), context)
 	pageSize := utils.ParseInt(context.DefaultQuery("page_size", "15"), context)
+
+	status := utils.ParseInt(context.DefaultQuery("status", "1"), context)
+	paymentType := utils.ParseInt(context.DefaultQuery("type", "1"), context)
+	name := context.Query("name")
+
+	startDate := utils.ParseDate(context.Query("start_date"), context)
+	endDate := utils.ParseDate(context.Query("end_date"), context)
+
+	installment := utils.ParseInt(context.DefaultQuery("installment", "1"), context)
+
+	startPaymentDate := utils.ParseDate(context.Query("start_date"), context)
+	endPaymentDate := utils.ParseDate(context.Query("end_date"), context)
+
+	fixed := context.Query("fixed") == "true"
+
+	payments, err := handler.service.GetAllPaymentService(
+		Pagination{
+			Page:     page,
+			PageSize: pageSize,
+		}, PaymentFilter{
+			UserId:           userData.Id,
+			Status:           status,
+			Type:             paymentType,
+			Name:             name,
+			StartDate:        startDate,
+			EndDate:          endDate,
+			installment:      installment,
+			StartPaymentDate: startPaymentDate,
+			EndPaymentDate:   endPaymentDate,
+			Fixed:            fixed,
+			Active:           true,
+		},
+	)
+	if err != nil {
+		log.Println(err)
+		context.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"payments":  payments.data,
+		"page_info": payments.pageInfo,
+	})
 }

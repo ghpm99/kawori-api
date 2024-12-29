@@ -71,7 +71,7 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 		filters.Name,
 		filters.StartDate,
 		filters.EndDate,
-		filters.installments,
+		filters.installment,
 		filters.StartPaymentDate,
 		filters.EndPaymentDate,
 		filters.Fixed,
@@ -84,18 +84,21 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 	if err != nil {
 		return GetPaymentReturn{}, err
 	}
-	var paymentsArray []PaymentSummary
+	var paymentsArray []Payment
 	for data.Next() {
-		var payment PaymentSummary
+		var payment Payment
 
 		if errPayment := data.Scan(
-			&payment.PaymentsDate,
-			&payment.UserId,
-			&payment.Total,
-			&payment.Debit,
-			&payment.Credit,
-			&payment.Dif,
-			&payment.Accumulated,
+			&payment.Id,
+			&payment.Status,
+			&payment.Type,
+			&payment.Name,
+			&payment.Date,
+			&payment.Installments,
+			&payment.PaymentDate,
+			&payment.Fixed,
+			&payment.Value,
+			&payment.Invoice,
 		); errPayment != nil {
 			return GetPaymentReturn{}, errPayment
 
@@ -111,7 +114,7 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 	}
 
 	if paymentsArray == nil {
-		paymentsArray = []PaymentSummary{}
+		paymentsArray = []Payment{}
 	}
 
 	return GetPaymentReturn{
