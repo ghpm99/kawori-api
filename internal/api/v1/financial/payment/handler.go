@@ -110,3 +110,42 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 		"page_info": payments.pageInfo,
 	})
 }
+
+func (handler *Handler) GetPaymentHandler(context *gin.Context) {
+	userContext, exist := context.Get("user")
+
+	if !exist {
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Este usuário não possui permissão para acessar este módulo.",
+		})
+	}
+
+	userData := userContext.(utils.User)
+
+	paymentId := utils.ParseInt(context.Param("paymentid"), context)
+
+	payment, err := handler.service.GetPaymentService(paymentId, userData.Id)
+
+	if err != nil {
+		log.Println(err)
+		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"data": payment,
+	})
+
+}
+
+func (handler *Handler) SavePaymentHandler(context *gin.Context) {
+	// paymentId := utils.ParseInt(context.Param("paymentid"), context)
+
+}
+
+func (handler *Handler) PayoffPaymentHandler(context *gin.Context) {
+	// paymentId := utils.ParseInt(context.Param("paymentid"), context)
+
+}

@@ -9,3 +9,6 @@ var GetPaymentSummary string
 
 //go:embed financial/get_all_payment.sql
 var GetAllPayments string
+
+//go:embed financial/get_payment.sql
+var GetPayment string

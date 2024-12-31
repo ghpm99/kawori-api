@@ -13,5 +13,9 @@ func (service *Service) GetPaymentSummary(pagination Pagination, filters Payment
 }
 
 func (service *Service) GetAllPaymentService(pagination Pagination, filters PaymentFilter) (GetPaymentReturn, error) {
-	return service.GetAllPaymentService(pagination, filters)
+	return service.repository.GetAllPayments(pagination, filters)
+}
+
+func (service *Service) GetPaymentService(idPayment int, IdUser int) (Payment, error) {
+	return service.repository.GetPayment(idPayment, IdUser)
 }

@@ -2,6 +2,7 @@ package payment
 
 import (
 	"database/sql"
+	"errors"
 	"kawori/api/pkg/database/queries"
 )
 
@@ -121,4 +122,40 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 		data:     paymentsArray,
 		pageInfo: pagination,
 	}, nil
+}
+
+func (repository *Repository) GetPayment(idPayment int, IdUser int) (Payment, error) {
+	data, err := repository.dbContext.Query(
+		queries.GetPayment,
+		idPayment,
+		IdUser,
+	)
+	if err != nil {
+		return Payment{}, err
+	}
+	var payment Payment
+
+	hasData := data.Next()
+
+	if !hasData {
+		return Payment{}, errors.New("No data")
+	}
+	if err := data.Scan(
+		&payment.Id,
+		&payment.Status,
+		&payment.Type,
+		&payment.Name,
+		&payment.Date,
+		&payment.Installments,
+		&payment.PaymentDate,
+		&payment.Fixed,
+		&payment.Active,
+		&payment.Value,
+		&payment.Invoice,
+	); err != nil {
+		return Payment{}, err
+
+	}
+
+	return payment, nil
 }
