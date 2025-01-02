@@ -124,7 +124,7 @@ func (handler *Handler) GetPaymentHandler(context *gin.Context) {
 
 	paymentId := utils.ParseInt(context.Param("paymentid"), context)
 
-	payment, err := handler.service.GetPaymentService(paymentId, userData.Id)
+	payment, err := handler.service.GetPaymentByIdService(paymentId, userData.Id)
 
 	if err != nil {
 		log.Println(err)

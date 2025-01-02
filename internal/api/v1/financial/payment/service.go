@@ -16,6 +16,6 @@ func (service *Service) GetAllPaymentService(pagination Pagination, filters Paym
 	return service.repository.GetAllPayments(pagination, filters)
 }
 
-func (service *Service) GetPaymentService(idPayment int, IdUser int) (Payment, error) {
-	return service.repository.GetPayment(idPayment, IdUser)
+func (service *Service) GetPaymentByIdService(idPayment int, IdUser int) (Payment, error) {
+	return service.repository.GetPaymentById(idPayment, IdUser)
 }

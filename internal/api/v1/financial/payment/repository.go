@@ -124,7 +124,7 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 	}, nil
 }
 
-func (repository *Repository) GetPayment(idPayment int, IdUser int) (Payment, error) {
+func (repository *Repository) GetPaymentById(idPayment int, IdUser int) (Payment, error) {
 	data, err := repository.dbContext.Query(
 		queries.GetPayment,
 		idPayment,
@@ -138,7 +138,7 @@ func (repository *Repository) GetPayment(idPayment int, IdUser int) (Payment, er
 	hasData := data.Next()
 
 	if !hasData {
-		return Payment{}, errors.New("No data")
+		return Payment{}, errors.New("no data")
 	}
 	if err := data.Scan(
 		&payment.Id,
