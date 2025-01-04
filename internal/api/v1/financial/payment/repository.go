@@ -159,3 +159,7 @@ func (repository *Repository) GetPaymentById(idPayment int, IdUser int) (Payment
 
 	return payment, nil
 }
+
+func (repository *Repository) CreatePayment(payment Payment) (Payment, error){
+	data, err := repository.dbContext.
+}

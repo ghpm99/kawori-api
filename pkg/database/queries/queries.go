@@ -4,6 +4,12 @@ import (
 	_ "embed"
 )
 
+//go:embed financial/create_payment.sql
+var CreatePayment string
+
+//go:embed financial/update_payment.sql
+var UpdatePayment string
+
 //go:embed financial/get_payment_summary.sql
 var GetPaymentSummary string
 
