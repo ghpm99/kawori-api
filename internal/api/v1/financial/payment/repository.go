@@ -1,8 +1,10 @@
 package payment
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"kawori/api/pkg/database/queries"
 )
 
@@ -12,6 +14,10 @@ type Repository struct {
 
 func NewRepository(database *sql.DB) *Repository {
 	return &Repository{database}
+}
+
+func (repository *Repository) CreateTransaction(ctx context.Context) (*sql.Tx, error) {
+	return repository.dbContext.BeginTx(ctx, nil)
 }
 
 func (repository *Repository) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
@@ -99,7 +105,7 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 			&payment.PaymentDate,
 			&payment.Fixed,
 			&payment.Value,
-			&payment.Invoice,
+			&payment.InvoiceId,
 		); errPayment != nil {
 			return GetPaymentReturn{}, errPayment
 
@@ -151,7 +157,7 @@ func (repository *Repository) GetPaymentById(idPayment int, IdUser int) (Payment
 		&payment.Fixed,
 		&payment.Active,
 		&payment.Value,
-		&payment.Invoice,
+		&payment.InvoiceId,
 	); err != nil {
 		return Payment{}, err
 
@@ -160,6 +166,80 @@ func (repository *Repository) GetPaymentById(idPayment int, IdUser int) (Payment
 	return payment, nil
 }
 
-func (repository *Repository) CreatePayment(payment Payment) (Payment, error){
-	data, err := repository.dbContext.
+func (repository *Repository) CreatePayment(transaction *sql.Tx, payment Payment) (Payment, error) {
+
+	fail := func(err error) (Payment, error) {
+		return payment, fmt.Errorf("CreatePayment: %v", err)
+	}
+
+	defer transaction.Rollback()
+
+	data, err := transaction.Exec(
+		queries.CreatePayment,
+		&payment.Type,
+		&payment.Name,
+		&payment.Date,
+		&payment.Installments,
+		&payment.PaymentDate,
+		&payment.Fixed,
+		&payment.Active,
+		&payment.Value,
+		&payment.Status,
+		&payment.InvoiceId,
+		&payment.UserId,
+	)
+	if err != nil {
+		return fail(err)
+	}
+	paymentId, err := data.LastInsertId()
+
+	if err != nil {
+		return fail(err)
+	}
+
+	payment.Id = int(paymentId)
+
+	return payment, nil
+}
+
+func (repository *Repository) UpdatePayment(transaction *sql.Tx, payment Payment) (bool, error) {
+
+	fail := func(err error) (bool, error) {
+		return false, fmt.Errorf("UpdatePayment: %v", err)
+	}
+
+	defer transaction.Rollback()
+
+	result, err := transaction.Exec(
+		queries.UpdatePayment,
+		&payment.Id,
+		&payment.UserId,
+		&payment.Type,
+		&payment.Name,
+		&payment.Date,
+		&payment.Installments,
+		&payment.PaymentDate,
+		&payment.Fixed,
+		&payment.Active,
+		&payment.Value,
+		&payment.Status,
+		&payment.InvoiceId,
+	)
+
+	if err != nil {
+		return fail(err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return fail(err)
+	}
+
+	if rowsAffected > 1 {
+		transaction.Rollback()
+		return fail(errors.New("multiple rows affected"))
+	}
+
+	return rowsAffected == 1, nil
 }

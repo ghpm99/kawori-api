@@ -23,6 +23,6 @@ type Payment struct {
 	Fixed        bool      `json:"fixed"`
 	Active       bool      `json:"active"`
 	Value        float64   `json:"value"`
-	Invoice      int       `json:"invoice"`
-	UserId       int       `json:"user_id"`
+	InvoiceId    int       `json:"invoice"`
+	UserId       int       `json:"-"`
 }

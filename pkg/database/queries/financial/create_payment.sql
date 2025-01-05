@@ -26,4 +26,3 @@ VALUES
         $10,
         $11
     )
-RETURNING id
