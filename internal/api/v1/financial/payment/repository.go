@@ -182,8 +182,6 @@ func (repository *Repository) CreatePayment(transaction *sql.Tx, payment Payment
 		return payment, fmt.Errorf("CreatePayment: %v", err)
 	}
 
-	defer transaction.Rollback()
-
 	args := []interface{}{
 		&payment.Type,
 		&payment.Name,
