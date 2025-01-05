@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"fmt"
 	"kawori/api/pkg/utils"
 	"log"
 	"net/http"
@@ -25,6 +26,8 @@ func (handler *Handler) GetPaymentSummaryHandler(context *gin.Context) {
 		})
 	}
 
+	fmt.Println(userContext)
+
 	userData := userContext.(utils.User)
 
 	page := utils.ParseInt(context.DefaultQuery("page", "1"), context)
@@ -34,7 +37,7 @@ func (handler *Handler) GetPaymentSummaryHandler(context *gin.Context) {
 	endDate := utils.ParseDate(context.Query("end_date"), context)
 
 	payments, err := handler.service.GetPaymentSummary(
-		Pagination{
+		utils.Pagination{
 			Page:     page,
 			PageSize: pageSize,
 		}, PaymentSummaryFilter{
@@ -83,7 +86,7 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 	fixed := context.Query("fixed") == "true"
 
 	payments, err := handler.service.GetAllPaymentService(
-		Pagination{
+		utils.Pagination{
 			Page:     page,
 			PageSize: pageSize,
 		}, PaymentFilter{
@@ -93,7 +96,7 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 			Name:             name,
 			StartDate:        startDate,
 			EndDate:          endDate,
-			installment:      installment,
+			Installment:      installment,
 			StartPaymentDate: startPaymentDate,
 			EndPaymentDate:   endPaymentDate,
 			Fixed:            fixed,
@@ -106,8 +109,8 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, gin.H{
-		"payments":  payments.data,
-		"page_info": payments.pageInfo,
+		"payments":  payments.Data,
+		"page_info": payments.PageInfo,
 	})
 }
 

@@ -18,3 +18,12 @@ var GetAllPayments string
 
 //go:embed financial/get_payment.sql
 var GetPayment string
+
+//go:embed financial/tag/create_tag.sql
+var CreateTagQuery string
+
+//go:embed financial/tag/update_tag.sql
+var UpdateTagQuery string
+
+//go:embed financial/tag/get_all_tags.sql
+var GetAllTagsQuery string

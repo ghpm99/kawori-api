@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,4 +24,8 @@ func ParseDate(value string, context *gin.Context) time.Time {
 		context.AbortWithError(http.StatusBadRequest, err)
 	}
 	return valueTime
+}
+
+func PrintQuery(query string, args []interface{}) {
+	log.Printf("Executing Query: %s\nArgs: %v\n", query, args)
 }

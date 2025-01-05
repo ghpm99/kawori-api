@@ -1,6 +1,9 @@
 package payment
 
-import "time"
+import (
+	"kawori/api/pkg/utils"
+	"time"
+)
 
 type PaymentSummaryFilter struct {
 	UserId    int
@@ -15,26 +18,19 @@ type PaymentFilter struct {
 	Name             string
 	StartDate        time.Time
 	EndDate          time.Time
-	installment      int
+	Installment      int
 	StartPaymentDate time.Time
 	EndPaymentDate   time.Time
 	Fixed            bool
 	Active           bool
 }
 
-type Pagination struct {
-	Page     int  `json:"page"`
-	PageSize int  `json:"page_size"`
-	HasNext  bool `json:"has_next"`
-	HasPrev  bool `json:"has_prev"`
-}
-
 type GetPaymentSummaryReturn struct {
 	data     []PaymentSummary
-	pageInfo Pagination
+	pageInfo utils.Pagination
 }
 
 type GetPaymentReturn struct {
-	data     []Payment
-	pageInfo Pagination
+	Data     []Payment        `json:"data"`
+	PageInfo utils.Pagination `json:"page_info"`
 }

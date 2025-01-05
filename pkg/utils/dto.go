@@ -13,3 +13,10 @@ type User struct {
 	LastLogin   string `json:"last_login"`
 	DateJoined  string `json:"date_joined"`
 }
+
+type Pagination struct {
+	Page     int  `json:"page"`
+	PageSize int  `json:"page_size"`
+	HasNext  bool `json:"has_next"`
+	HasPrev  bool `json:"has_prev"`
+}

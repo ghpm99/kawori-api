@@ -11,18 +11,18 @@ SELECT
     fp.invoice_id
 FROM
     financial_payment fp
-WHERE
-    1 = 1
-    AND fp.status = $1
-    AND fp.type = $2
-    AND fp.name LIKE $3
-    AND fp."date" BETWEEN $4
-    AND $5
-    AND fp.installments = $6
-    AND fp.payment_date BETWEEN $7
-    AND $8
-    AND fp.fixed = $9
-    AND fp.active = $10
-    AND fp.user_id = $11
-LIMIT
-    $12 OFFSET $13;
+-- WHERE
+--     1 = 1
+--     AND fp.status = $4
+--     AND fp.type = $5
+--     AND fp.name LIKE $6
+--     AND fp."date" BETWEEN $7
+--     AND $8
+--     AND fp.installments = $9
+--     AND fp.payment_date BETWEEN $10
+--     AND $11
+--     AND fp.fixed = $12
+--     AND fp.active = $13
+--     AND fp.user_id = $3
+-- LIMIT
+--     $1 OFFSET $2;

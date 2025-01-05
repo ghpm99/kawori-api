@@ -1,21 +1,13 @@
 package tag
 
-import "time"
+import "kawori/api/pkg/utils"
 
-type PaymentSummaryFilter struct {
-	UserId    int
-	StartDate time.Time
-	EndDate   time.Time
+type TagFilter struct {
+	Name   string `json:"name"`
+	UserId int    `json:"-"`
 }
 
-type Pagination struct {
-	Page     int  `json:"page"`
-	PageSize int  `json:"page_size"`
-	HasNext  bool `json:"has_next"`
-	HasPrev  bool `json:"has_prev"`
-}
-
-type GetPaymentSummaryReturn struct {
-	data     []PaymentSummary
-	pageInfo Pagination
+type GetTagReturn struct {
+	data     []Tag
+	pageInfo utils.Pagination
 }

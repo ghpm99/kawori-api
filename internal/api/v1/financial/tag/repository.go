@@ -2,7 +2,10 @@ package tag
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"kawori/api/pkg/database/queries"
+	"kawori/api/pkg/utils"
 )
 
 type Repository struct {
@@ -13,52 +16,116 @@ func NewRepository(database *sql.DB) *Repository {
 	return &Repository{database}
 }
 
-func (repository *Repository) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
+func (repository *Repository) CreateTagRepository(transaction *sql.Tx, tag Tag) (Tag, error) {
 
-	data, err := repository.dbContext.Query(
-		queries.GetPaymentSummary,
-		filters.UserId,
-		filters.StartDate,
-		filters.EndDate,
-		pagination.PageSize,
-		pagination.Page,
+	fail := func(err error) (Tag, error) {
+		return tag, fmt.Errorf("CreateTagRepository: %v", err)
+	}
+
+	defer transaction.Rollback()
+
+	result, err := transaction.Exec(
+		queries.CreateTagQuery,
+		&tag.Name,
+		&tag.Color,
+		&tag.UserId,
 	)
 
 	if err != nil {
-		return GetPaymentSummaryReturn{}, err
+		return fail(err)
 	}
-	var paymentsArray []PaymentSummary
-	for data.Next() {
-		var payment PaymentSummary
 
-		if errPayment := data.Scan(
-			&payment.PaymentsDate,
-			&payment.UserId,
-			&payment.Total,
-			&payment.Debit,
-			&payment.Credit,
-			&payment.Dif,
-			&payment.Accumulated,
-		); errPayment != nil {
-			return GetPaymentSummaryReturn{}, errPayment
+	tagId, err := result.LastInsertId()
+
+	if err != nil {
+		return fail(err)
+	}
+
+	tag.Id = int(tagId)
+
+	return tag, nil
+}
+
+func (repository *Repository) UpdateTagRepository(transaction *sql.Tx, tag Tag) (bool, error) {
+
+	fail := func(err error) (bool, error) {
+		return false, fmt.Errorf("UpdateTagRepository: %v", err)
+	}
+
+	defer transaction.Rollback()
+
+	result, err := transaction.Exec(
+		queries.UpdateTagQuery,
+		&tag.Id,
+		&tag.UserId,
+		&tag.Name,
+		&tag.Color,
+	)
+
+	if err != nil {
+		return fail(err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return fail(err)
+	}
+
+	if rowsAffected > 1 {
+		transaction.Rollback()
+		return fail(errors.New("multiple rows affected"))
+	}
+
+	return rowsAffected == 1, nil
+}
+
+func (repository *Repository) GetTagRepository(pagination utils.Pagination, filters TagFilter) (GetTagReturn, error) {
+
+	fail := func(err error) (GetTagReturn, error) {
+		return GetTagReturn{}, fmt.Errorf("GetTagRepository: %v", err)
+	}
+
+	data, err := repository.dbContext.Query(
+		queries.GetAllTagsQuery,
+		pagination.PageSize,
+		pagination.Page,
+		filters.UserId,
+		filters.Name,
+	)
+
+	if err != nil {
+		return fail(err)
+	}
+	var tagsArray []Tag
+	for data.Next() {
+		var tag Tag
+
+		if err := data.Scan(
+			&tag.Id,
+			&tag.Name,
+			&tag.Color,
+			&tag.UserId,
+		); err != nil {
+			return fail(err)
 
 		}
-		paymentsArray = append(paymentsArray, payment)
+		tagsArray = append(tagsArray, tag)
 	}
-	if errorSql := data.Err(); errorSql != nil {
-		return GetPaymentSummaryReturn{}, errorSql
+	if err := data.Err(); err != nil {
+		return fail(err)
 	}
 
 	if pagination.Page > 1 {
 		pagination.HasPrev = true
 	}
 
-	if paymentsArray == nil {
-		paymentsArray = []PaymentSummary{}
+	if tagsArray == nil {
+		tagsArray = []Tag{}
 	}
 
-	return GetPaymentSummaryReturn{
-		data:     paymentsArray,
+	return GetTagReturn{
+		data:     tagsArray,
 		pageInfo: pagination,
 	}, nil
 }

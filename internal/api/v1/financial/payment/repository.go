@@ -1,11 +1,13 @@
 package payment
 
 import (
-	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"kawori/api/pkg/database/queries"
+	"kawori/api/pkg/utils"
+	"log"
 )
 
 type Repository struct {
@@ -16,11 +18,7 @@ func NewRepository(database *sql.DB) *Repository {
 	return &Repository{database}
 }
 
-func (repository *Repository) CreateTransaction(ctx context.Context) (*sql.Tx, error) {
-	return repository.dbContext.BeginTx(ctx, nil)
-}
-
-func (repository *Repository) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
+func (repository *Repository) GetPaymentSummary(pagination utils.Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
 
 	data, err := repository.dbContext.Query(
 		queries.GetPaymentSummary,
@@ -70,27 +68,39 @@ func (repository *Repository) GetPaymentSummary(pagination Pagination, filters P
 	}, nil
 }
 
-func (repository *Repository) GetAllPayments(pagination Pagination, filters PaymentFilter) (GetPaymentReturn, error) {
-	data, err := repository.dbContext.Query(
-		queries.GetAllPayments,
+func (repository *Repository) GetAllPayments(pagination utils.Pagination, filters PaymentFilter) (GetPaymentReturn, error) {
+
+	if json, _ := json.Marshal(filters); json != nil {
+		fmt.Println(string(json))
+
+	}
+
+	args := []interface{}{
+		pagination.PageSize,
+		pagination.Page,
+		filters.UserId,
 		filters.Status,
 		filters.Type,
-		filters.Name,
+		fmt.Sprintf("%%%s%%", filters.Name),
 		filters.StartDate,
 		filters.EndDate,
-		filters.installment,
+		filters.Installment,
 		filters.StartPaymentDate,
 		filters.EndPaymentDate,
 		filters.Fixed,
 		filters.Active,
-		filters.UserId,
-		pagination.PageSize,
-		pagination.Page,
+	}
+
+	log.Printf("Executing Query: %s\nArgs: %v\n", queries.GetAllPayments, args)
+
+	data, err := repository.dbContext.Query(
+		queries.GetAllPayments,
 	)
 
 	if err != nil {
 		return GetPaymentReturn{}, err
 	}
+
 	var paymentsArray []Payment
 	for data.Next() {
 		var payment Payment
@@ -125,8 +135,8 @@ func (repository *Repository) GetAllPayments(pagination Pagination, filters Paym
 	}
 
 	return GetPaymentReturn{
-		data:     paymentsArray,
-		pageInfo: pagination,
+		Data:     paymentsArray,
+		PageInfo: pagination,
 	}, nil
 }
 
@@ -174,8 +184,7 @@ func (repository *Repository) CreatePayment(transaction *sql.Tx, payment Payment
 
 	defer transaction.Rollback()
 
-	data, err := transaction.Exec(
-		queries.CreatePayment,
+	args := []interface{}{
 		&payment.Type,
 		&payment.Name,
 		&payment.Date,
@@ -187,6 +196,15 @@ func (repository *Repository) CreatePayment(transaction *sql.Tx, payment Payment
 		&payment.Status,
 		&payment.InvoiceId,
 		&payment.UserId,
+	}
+
+	query := queries.CreatePayment
+
+	utils.PrintQuery(query, args)
+
+	data, err := transaction.Exec(
+		query,
+		args...,
 	)
 	if err != nil {
 		return fail(err)

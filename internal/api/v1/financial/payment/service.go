@@ -1,6 +1,9 @@
 package payment
 
-import "context"
+import (
+	"context"
+	"kawori/api/pkg/utils"
+)
 
 type Service struct {
 	repository *Repository
@@ -10,11 +13,11 @@ func NewService(repository *Repository) *Service {
 	return &Service{repository: repository}
 }
 
-func (service *Service) GetPaymentSummary(pagination Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
+func (service *Service) GetPaymentSummary(pagination utils.Pagination, filters PaymentSummaryFilter) (GetPaymentSummaryReturn, error) {
 	return service.repository.GetPaymentSummary(pagination, filters)
 }
 
-func (service *Service) GetAllPaymentService(pagination Pagination, filters PaymentFilter) (GetPaymentReturn, error) {
+func (service *Service) GetAllPaymentService(pagination utils.Pagination, filters PaymentFilter) (GetPaymentReturn, error) {
 	return service.repository.GetAllPayments(pagination, filters)
 }
 
@@ -24,7 +27,7 @@ func (service *Service) GetPaymentByIdService(idPayment int, IdUser int) (Paymen
 
 func (service *Service) UpdatePaymentService(payment Payment) (bool, error) {
 	ctx := context.Background()
-	transaction, err := service.repository.CreateTransaction(ctx)
+	transaction, err := service.repository.dbContext.BeginTx(ctx, nil)
 
 	if err != nil {
 		return false, err
