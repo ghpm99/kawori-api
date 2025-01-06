@@ -95,6 +95,7 @@ func (repository *Repository) GetAllPayments(pagination utils.Pagination, filter
 
 	data, err := repository.dbContext.Query(
 		queries.GetAllPayments,
+		args...,
 	)
 
 	if err != nil {
@@ -223,8 +224,6 @@ func (repository *Repository) UpdatePayment(transaction *sql.Tx, payment Payment
 	fail := func(err error) (bool, error) {
 		return false, fmt.Errorf("UpdatePayment: %v", err)
 	}
-
-	defer transaction.Rollback()
 
 	result, err := transaction.Exec(
 		queries.UpdatePayment,
