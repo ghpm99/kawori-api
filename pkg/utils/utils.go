@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -27,5 +30,24 @@ func ParseDate(value string, context *gin.Context) time.Time {
 }
 
 func PrintQuery(query string, args []interface{}) {
-	log.Printf("Executing Query: %s\nArgs: %v\n", query, args)
+	args_json, _ := json.Marshal(args)
+	log.Printf("Executing Query: %s\nArgs: %v\n", query, string(args_json))
+}
+
+func GenerateQueryFilter[T any](filter T) string {
+
+	fmt.Println("GenerateQueryFilter")
+	t := reflect.TypeOf(filter)
+	v := reflect.ValueOf(filter)
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := v.Field(i).Interface()
+
+		fmt.Printf("Campo: %s, Valor: %v, tipo: %s\n", field.Name, value, reflect.TypeOf(value))
+
+	}
+
+	return ""
+
 }

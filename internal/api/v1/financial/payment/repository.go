@@ -87,9 +87,10 @@ func (repository *Repository) GetAllPayments(pagination utils.Pagination, filter
 		filters.Installment,
 		filters.StartPaymentDate,
 		filters.EndPaymentDate,
-		filters.Fixed,
 		filters.Active,
 	}
+
+	utils.GenerateQueryFilter(filters)
 
 	log.Printf("Executing Query: %s\nArgs: %v\n", queries.GetAllPayments, args)
 

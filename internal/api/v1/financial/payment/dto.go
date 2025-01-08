@@ -21,7 +21,6 @@ type PaymentFilter struct {
 	Installment      int
 	StartPaymentDate time.Time
 	EndPaymentDate   time.Time
-	Fixed            bool
 	Active           bool
 }
 

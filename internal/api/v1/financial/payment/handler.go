@@ -78,12 +78,10 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 	startDate := utils.ParseDate(context.Query("start_date"), context)
 	endDate := utils.ParseDate(context.Query("end_date"), context)
 
-	installment := utils.ParseInt(context.DefaultQuery("installment", "1"), context)
+	installment := utils.ParseInt(context.DefaultQuery("installment", "0"), context)
 
 	startPaymentDate := utils.ParseDate(context.Query("start_date"), context)
 	endPaymentDate := utils.ParseDate(context.Query("end_date"), context)
-
-	fixed := context.Query("fixed") == "true"
 
 	payments, err := handler.service.GetAllPaymentService(
 		utils.Pagination{
@@ -99,7 +97,6 @@ func (handler *Handler) GetAllPaymentHandler(context *gin.Context) {
 			Installment:      installment,
 			StartPaymentDate: startPaymentDate,
 			EndPaymentDate:   endPaymentDate,
-			Fixed:            fixed,
 			Active:           true,
 		},
 	)

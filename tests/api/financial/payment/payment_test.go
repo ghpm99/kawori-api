@@ -7,7 +7,6 @@ import (
 	"kawori/api/internal/app"
 	"kawori/api/pkg/utils"
 	"kawori/api/tests"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,8 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetPaymentSummary(t *testing.T) {
-
+func setupTest() (*payment.Handler, *gin.Engine) {
 	authMiddleware := func(c *gin.Context) {
 		var user = utils.User{
 			Id:          1,
@@ -38,9 +36,8 @@ func TestGetPaymentSummary(t *testing.T) {
 	}
 
 	database := tests.ConfigInMemoryDatabase()
-	defer database.Close()
-	CreatePaymentTableFixture(database)
 
+	CreatePaymentTableFixture(database)
 	repository := payment.NewRepository(database)
 	service := payment.NewService(repository)
 	handler := payment.NewHandler(service)
@@ -50,6 +47,13 @@ func TestGetPaymentSummary(t *testing.T) {
 	router := app.SetUpRouter()
 	router.Use(authMiddleware)
 
+	return handler, router
+
+}
+
+func TestGetPaymentSummary(t *testing.T) {
+	handler, router := setupTest()
+
 	router.GET("/", handler.GetAllPaymentHandler)
 
 	req, _ := http.NewRequest(http.MethodGet, "/?start_date=2024-01-01&end_date=2025-01-01&name=teste", nil)
@@ -57,10 +61,8 @@ func TestGetPaymentSummary(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	fmt.Println(w.Body)
-	dataRef, err := time.Parse("2006-01-02", "2024-01-02")
-	if err != nil {
-		log.Fatalf("Falha ao popular tabela: %v", err)
-	}
+
+	dataRef, _ := time.Parse("2006-01-02", "2024-01-02")
 
 	var paymentArray = []payment.Payment{
 		{
