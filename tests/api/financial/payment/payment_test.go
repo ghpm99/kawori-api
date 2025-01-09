@@ -56,7 +56,7 @@ func TestGetPaymentSummary(t *testing.T) {
 
 	router.GET("/", handler.GetAllPaymentHandler)
 
-	req, _ := http.NewRequest(http.MethodGet, "/?start_date=2024-01-01&end_date=2025-01-01&name=teste", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/?start_date=2024-01-01&end_date=2025-01-01&name=teste&status=1", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 

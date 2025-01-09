@@ -13,15 +13,16 @@ type PaymentSummaryFilter struct {
 
 type PaymentFilter struct {
 	UserId           int
-	Status           int
-	Type             int
-	Name             string
-	StartDate        time.Time
-	EndDate          time.Time
-	Installment      int
-	StartPaymentDate time.Time
-	EndPaymentDate   time.Time
-	Active           bool
+	Status           utils.Optional[int]       `filter:"status"`
+	Type             utils.Optional[int]       `filter:"type"`
+	Name             utils.Optional[string]    `filter:"name"`
+	StartDate        time.Time                 `filter:"start_date"`
+	EndDate          time.Time                 `filter:"end_date"`
+	Installment      utils.Optional[int]       `filter:"installment"`
+	StartPaymentDate utils.Optional[time.Time] `filter:"start_payment_date"`
+	EndPaymentDate   utils.Optional[time.Time] `filter:"end_payment_date"`
+	Active           bool                      `filter:"active"`
+	Fixed            utils.Optional[bool]      `filter:"fixed"`
 }
 
 type GetPaymentSummaryReturn struct {

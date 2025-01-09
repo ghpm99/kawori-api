@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,24 +29,173 @@ func ParseDate(value string, context *gin.Context) time.Time {
 }
 
 func PrintQuery(query string, args []interface{}) {
-	args_json, _ := json.Marshal(args)
-	log.Printf("Executing Query: %s\nArgs: %v\n", query, string(args_json))
+
+	finalQuery := query
+
+	for i := len(args) - 1; i >= 0; i-- {
+		placeHolder := fmt.Sprintf("$%s", strconv.Itoa(i+1))
+		finalQuery = replacePlaceholder(placeHolder, finalQuery, args[i])
+	}
+
+	fmt.Println("Query gerada:", finalQuery)
 }
 
-func GenerateQueryFilter[T any](filter T) string {
+func replacePlaceholder(placeHolder string, query string, param interface{}) string {
+	var value string
+	switch v := param.(type) {
+	case string:
+		value = fmt.Sprintf("'%s'", v)
+	case int, int64, float64:
+		value = fmt.Sprintf("%v", v)
+	case bool:
+		value = "TRUE"
+	default:
+		value = placeHolder
+	}
+	return strings.ReplaceAll(query, placeHolder, value)
+}
 
-	fmt.Println("GenerateQueryFilter")
-	t := reflect.TypeOf(filter)
-	v := reflect.ValueOf(filter)
+func GenerateFilterFromContext[T any](context *gin.Context, filter *T) {
+	t := reflect.TypeOf(filter).Elem()
+	v := reflect.ValueOf(filter).Elem()
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		value := v.Field(i).Interface()
+		tag := field.Tag.Get("filter")
 
-		fmt.Printf("Campo: %s, Valor: %v, tipo: %s\n", field.Name, value, reflect.TypeOf(value))
+		if tag == "" {
+			continue
+		}
+
+		paramValue := context.Query(tag)
+		fieldValue := v.Field(i)
+		fieldType := field.Type
+
+		if paramValue == "" {
+			if fieldType.Kind() == reflect.Struct && fieldType.Name() == "Optional" {
+				fieldValue.Set(reflect.ValueOf(Optional[any]{
+					HasValue: false,
+					Value:    nil,
+				}))
+			}
+			continue
+		}
+
+		switch fieldType.Kind() {
+		case reflect.Int:
+			if intValue, err := strconv.Atoi(paramValue); err == nil {
+
+				fieldValue.SetInt(int64(intValue))
+			}
+		case reflect.String:
+
+			fieldValue.SetString(paramValue)
+		case reflect.Bool:
+			if boolValue, err := strconv.ParseBool(paramValue); err == nil {
+
+				fieldValue.SetBool(boolValue)
+			}
+		case reflect.Struct:
+			// Verifica se é um `time.Time`
+			fmt.Println(fieldType, paramValue)
+			if fieldType == reflect.TypeOf(time.Time{}) {
+				if parsedTime, err := time.Parse("2006-01-02", paramValue); err == nil {
+					fmt.Println(parsedTime)
+					fieldValue.Set(reflect.ValueOf(parsedTime))
+				}
+			}
+		default:
+			// Verifica se é um `Optional`
+			if fieldType.Kind() == reflect.Struct && fieldType.Name() == "Optional" {
+				elemType := fieldType.Field(0).Type // Tipo genérico do `Optional`
+
+				switch elemType.Kind() {
+				case reflect.Int:
+					if intValue, err := strconv.Atoi(paramValue); err == nil {
+
+						fieldValue.Set(reflect.ValueOf(NewOptional(intValue)))
+					}
+				case reflect.String:
+
+					fieldValue.Set(reflect.ValueOf(NewOptional(paramValue)))
+				case reflect.Bool:
+					if boolValue, err := strconv.ParseBool(paramValue); err == nil {
+
+						fieldValue.Set(reflect.ValueOf(NewOptional(boolValue)))
+					}
+				case reflect.Struct:
+					// Para `Optional[time.Time]`
+					if elemType == reflect.TypeOf(time.Time{}) {
+						if parsedTime, err := time.Parse("2006-01-02", paramValue); err == nil {
+
+							fieldValue.Set(reflect.ValueOf(NewOptional(parsedTime)))
+						}
+					}
+				}
+			}
+
+		}
 
 	}
 
-	return ""
+}
 
+func parseContextQuery(fieldType reflect.Type, fieldValue reflect.Value, paramValue string) {
+	switch fieldType.Kind() {
+	case reflect.Int:
+		if intValue, err := strconv.Atoi(paramValue); err == nil {
+
+			fieldValue.SetInt(int64(intValue))
+		}
+	case reflect.String:
+
+		fieldValue.SetString(paramValue)
+	case reflect.Bool:
+		if boolValue, err := strconv.ParseBool(paramValue); err == nil {
+
+			fieldValue.SetBool(boolValue)
+		}
+	case reflect.Struct:
+		// Verifica se é um `time.Time`
+		if fieldType == reflect.TypeOf(time.Time{}) {
+			if parsedTime, err := time.Parse("2006-01-02", paramValue); err == nil {
+
+				fieldValue.Set(reflect.ValueOf(parsedTime))
+			}
+		}
+	default:
+		// Verifica se é um `Optional`
+		if fieldType.Kind() == reflect.Struct && fieldType.Name() == "Optional" {
+			elemType := fieldType.Field(0).Type // Tipo genérico do `Optional`
+
+			switch elemType.Kind() {
+			case reflect.Int:
+				if intValue, err := strconv.Atoi(paramValue); err == nil {
+
+					fieldValue.Set(reflect.ValueOf(NewOptional(intValue)))
+				}
+			case reflect.String:
+
+				fieldValue.Set(reflect.ValueOf(NewOptional(paramValue)))
+			case reflect.Bool:
+				if boolValue, err := strconv.ParseBool(paramValue); err == nil {
+
+					fieldValue.Set(reflect.ValueOf(NewOptional(boolValue)))
+				}
+			case reflect.Struct:
+				// Para `Optional[time.Time]`
+				if elemType == reflect.TypeOf(time.Time{}) {
+					if parsedTime, err := time.Parse("2006-01-02", paramValue); err == nil {
+
+						fieldValue.Set(reflect.ValueOf(NewOptional(parsedTime)))
+					}
+				}
+			}
+		}
+
+	}
+}
+
+func NewOptional[T any](value T) Optional[T] {
+	return Optional[T]{Value: value, HasValue: true}
 }

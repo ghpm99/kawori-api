@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"kawori/api/pkg/database/queries"
 	"kawori/api/pkg/utils"
-	"log"
 )
 
 type Repository struct {
@@ -79,23 +78,25 @@ func (repository *Repository) GetAllPayments(pagination utils.Pagination, filter
 		pagination.PageSize,
 		pagination.Page,
 		filters.UserId,
-		filters.Status,
-		filters.Type,
-		fmt.Sprintf("%%%s%%", filters.Name),
+		filters.Status.Value,
+		filters.Type.Value,
+		fmt.Sprintf("%%%s%%", filters.Name.Value),
 		filters.StartDate,
 		filters.EndDate,
-		filters.Installment,
-		filters.StartPaymentDate,
-		filters.EndPaymentDate,
+		filters.Installment.Value,
+		filters.StartPaymentDate.Value,
+		filters.EndPaymentDate.Value,
 		filters.Active,
+		!filters.Fixed.HasValue,
+		filters.Fixed.Value,
 	}
 
-	utils.GenerateQueryFilter(filters)
+	query := queries.GetAllPayments
 
-	log.Printf("Executing Query: %s\nArgs: %v\n", queries.GetAllPayments, args)
+	utils.PrintQuery(query, args)
 
 	data, err := repository.dbContext.Query(
-		queries.GetAllPayments,
+		query,
 		args...,
 	)
 
