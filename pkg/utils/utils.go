@@ -42,6 +42,7 @@ func PrintQuery(query string, args []interface{}) {
 
 func replacePlaceholder(placeHolder string, query string, param interface{}) string {
 	var value string
+
 	switch v := param.(type) {
 	case string:
 		value = fmt.Sprintf("'%s'", v)
@@ -49,8 +50,11 @@ func replacePlaceholder(placeHolder string, query string, param interface{}) str
 		value = fmt.Sprintf("%v", v)
 	case bool:
 		value = "TRUE"
+	case time.Time:
+		value = v.Format("2006-01-02")
 	default:
-		value = placeHolder
+		fmt.Println("value", v)
+		value = "NULL"
 	}
 	return strings.ReplaceAll(query, placeHolder, value)
 }

@@ -186,17 +186,17 @@ func (repository *Repository) CreatePayment(transaction *sql.Tx, payment Payment
 	}
 
 	args := []interface{}{
-		&payment.Type,
-		&payment.Name,
-		&payment.Date,
-		&payment.Installments,
-		&payment.PaymentDate,
-		&payment.Fixed,
-		&payment.Active,
-		&payment.Value,
-		&payment.Status,
-		&payment.InvoiceId,
-		&payment.UserId,
+		payment.Type,
+		payment.Name,
+		payment.Date,
+		payment.Installments,
+		payment.PaymentDate,
+		payment.Fixed,
+		payment.Active,
+		payment.Value,
+		payment.Status,
+		payment.InvoiceId,
+		payment.UserId,
 	}
 
 	query := queries.CreatePayment
